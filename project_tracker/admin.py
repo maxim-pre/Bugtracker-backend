@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Count
 from django.utils.html import format_html, urlencode
 from django.urls import reverse 
-from .models import Project, Ticket
+from .models import Project, Ticket, Developer
 
 
 
@@ -42,5 +42,10 @@ class Tickets(admin.ModelAdmin):
 
     def project_name(self, ticket):
         return ticket.project.name
+
+@admin.register(Developer)
+class Developer(admin.ModelAdmin):
+    list_display = ['first_name', 'last_name']
+    pass
 
 
