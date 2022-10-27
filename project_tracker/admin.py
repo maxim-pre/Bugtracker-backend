@@ -5,6 +5,9 @@ from django.urls import reverse
 from .models import Project, Ticket
 
 
+
+
+
 class TicketInLine(admin.TabularInline):
     model = Ticket
     extra=0
@@ -34,7 +37,7 @@ class ProjectAdmin(admin.ModelAdmin):
 class Tickets(admin.ModelAdmin):
     list_display = ['title', 'project_name', 'submitter', 'created_at', 'developer', 'last_updated', 'status']
     list_select_related = ['project'] #the list of fields we want to eager load
-    list_filter = ['project']
+    list_filter = ['project', 'created_at']
     
 
     def project_name(self, ticket):
