@@ -1,8 +1,12 @@
 from rest_framework import serializers
-from . import models
+from .models import Project, Ticket
 
 class ProjectSerializer(serializers.ModelSerializer):
-
     class Meta:
         fields = ['id', 'name', 'description', 'date_created']
-        model = models.Project
+        model = Project
+
+class TicketSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ['id','title','description','submitter','developer','status','created_at','last_updated','project']
+        model = Ticket
