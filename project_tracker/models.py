@@ -2,17 +2,6 @@ from django.db import models
 from django.contrib import admin
 from django.conf import settings
 
-class Project(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.CharField(max_length=255)
-    date_created = models.DateField(auto_now_add=True)
-
-    def __str__(self) -> str:
-        return self.name
-    
-    class Meta:
-        ordering = ['name']
-
 class Developer(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     birthday = models.DateField(null=True, blank=True)
@@ -31,7 +20,17 @@ class Developer(models.Model):
     class Meta:
         ordering = ['user__first_name', 'user__last_name']
     
+class Project(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    date_created = models.DateField(auto_now_add=True)
+    creator = models.ForeignKey(Developer, on_delete=models.PROTECT)
 
+    def __str__(self) -> str:
+        return self.name
+    
+    class Meta:
+        ordering = ['name']
 class ProjectDeveloper(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
