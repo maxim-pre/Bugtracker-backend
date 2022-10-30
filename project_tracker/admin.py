@@ -9,7 +9,7 @@ class TicketInLine(admin.TabularInline):
     extra=0
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description', 'date_created', 'tickets_count', 'developers_count'] # column headers in admin interface
+    list_display = ['name', 'description', 'creator','date_created', 'tickets_count', 'developers_count'] # column headers in admin interface
     list_editable = ['description'] 
     date_hierarchy = 'date_created'
     list_per_page = 10

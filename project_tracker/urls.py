@@ -8,4 +8,5 @@ router.register('projects', ProjectViewSet, basename='projects')
 router.register('tickets', TicketViewSet, basename='tickets')
 router.register('developers', DeveloperViewSet, basename='developers')
 
+
 urlpatterns = router.urls
