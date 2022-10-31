@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, UpdateModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.mixins import RetrieveModelMixin, CreateModelMixin, DestroyModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import permissions
 from.models import Project, Ticket, Developer
 from.serializers import DeveloperSerializer, ProjectSerializer, TicketSerializer
 
@@ -23,4 +25,5 @@ class TicketViewSet(ModelViewSet):
 class DeveloperViewSet(ModelViewSet):
     queryset = Developer.objects.all()
     serializer_class = DeveloperSerializer
+    permission_classes = [permissions.IsAdminUser]
 
