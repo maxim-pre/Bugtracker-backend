@@ -32,7 +32,7 @@ class Project(models.Model):
     class Meta:
         ordering = ['name']
 class ProjectDeveloper(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='developers')
     developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
 
     def developer_name(self):
