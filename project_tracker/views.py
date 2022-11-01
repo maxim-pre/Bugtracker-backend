@@ -8,14 +8,13 @@ from rest_framework import permissions
 from rest_framework.decorators import action
 from.models import Project, Ticket, Developer, ProjectDeveloper
 from django.conf import settings
-from.serializers import DeveloperSerializer, ProjectSerializer
+from.serializers import CreateProjectSerializer, DeveloperSerializer, ProjectSerializer
 
 # Create your views here.
 #you should only be able update and delete the pojects you have created
 #you should only be able to view the projects you are assigned to or have created
 #when a project is created the creator should automatically be assigned to the project
 class ProjectViewSet(ModelViewSet):
-    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -24,13 +23,21 @@ class ProjectViewSet(ModelViewSet):
 
         if self.request.user.is_staff:
             return Project.objects.all()
-        
+
         developer_id = Developer.objects.only('id').get(user_id=user.id)
         related_projects = ProjectDeveloper.objects.select_related('project').only('project_id').filter(developer_id=developer_id)
         project_ids = [i.project_id for i in related_projects]
         return Project.objects.filter(id__in=project_ids)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateProjectSerializer
+        return ProjectSerializer
     
-    @action(detail=False, methods=['GET'], permission_classes=[permissions.IsAuthenticated])
+    def get_serializer_context(self):
+        return {'user_id':self.request.user.id}
+    
+    @action(detail=False, methods=['GET', 'PUT'], permission_classes=[permissions.IsAuthenticated])
     def mine(self, request):
         developer_id = Developer.objects.only('user_id').get(user_id=request.user.id)
         created_projects = Project.objects.filter(creator_id=developer_id)
@@ -38,6 +45,8 @@ class ProjectViewSet(ModelViewSet):
             serializer = ProjectSerializer(created_projects, many=True)
             return Response(serializer.data)
 
+        return ProjectSerializer
+    
 
 
 class DeveloperViewSet(ModelViewSet):
