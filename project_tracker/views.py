@@ -8,7 +8,7 @@ from rest_framework import permissions
 from rest_framework.decorators import action
 from.models import Project, Ticket, Developer, ProjectDeveloper
 from django.conf import settings
-from.serializers import CreateProjectSerializer, DeveloperSerializer, ProjectSerializer
+from.serializers import CreateProjectSerializer, CreateTicketSerializer, DeveloperSerializer, ProjectSerializer, TicketSerializer, UpdateProjectSerializer
 
 # Create your views here.
 #you should only be able update and delete the pojects you have created
@@ -32,6 +32,8 @@ class ProjectViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return CreateProjectSerializer
+        elif self.request.method == 'PATCH' or self.request.method == 'PUT':
+            return UpdateProjectSerializer
         return ProjectSerializer
     
     def get_serializer_context(self):
@@ -46,6 +48,15 @@ class ProjectViewSet(ModelViewSet):
             return Response(serializer.data)
 
         return ProjectSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+        developer_id = Developer.objects.get(user_id=self.request.user.id)
+        current_project = Project.objects.get(id=kwargs['pk'])
+
+        if current_project.creator != developer_id:
+            return Response({'error':'You cannot delete this project because you are not the creator'})
+        
+        return super().destroy(request, *args, **kwargs)      
     
 
 
@@ -66,6 +77,22 @@ class DeveloperViewSet(ModelViewSet):
             serializer.save()
             return Response(serializer.data)
 
+class TicketViewSet(ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TicketSerializer
+
+    def get_queryset(self):
+        return Ticket.objects.filter(project_id=self.kwargs['project_pk'])
+    
+    def get_serializer_context(self):
+        return {
+            'project_id':self.kwargs['project_pk'],
+            'user_id':self.request.user.id,
+            }
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateTicketSerializer
+        return TicketSerializer
 
 
 
