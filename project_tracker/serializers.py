@@ -13,6 +13,7 @@ class CreateProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ['name', 'description']
+        
     
     def save(self, **kwargs):
         creator = Developer.objects.get(user_id=self.context['user_id'])
@@ -57,14 +58,40 @@ class CreateTicketSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         submitter = Developer.objects.get(user_id=self.context['user_id'])
         project = Project.objects.get(id=self.context['project_id'])
-        developer = self.validated_data['developer']
+        developer = self.validated_data['developer_id']
 
         new_ticket = Ticket.objects.create(
             title = self.validated_data['title'],
             description = self.validated_data['description'],
             submitter = submitter,
-            developer = developer,
+            developer_id = developer,
             project = project
         )
         return 
 
+class CreateProjectDeveloperSerializer(serializers.Serializer):
+    developer_id = serializers.IntegerField()
+    
+    def validate_developer_id(self, developer_id):
+        #make sure the developer exists
+        if not Developer.objects.filter(pk=developer_id).exists():
+            raise serializers.ValidationError('error: developer with that id does not exist')
+        #make sure the developer is not already part of the project
+        invalid_ids = [entry.id for entry in ProjectDeveloper.objects \
+                        .only('developer_id') \
+                        .filter(project_id=self.context['project_id'])]
+        if developer_id in invalid_ids:
+            raise serializers.ValidationError(f'error: developer with id {developer_id} is already part of this project')
+        
+        return developer_id
+
+
+    
+    def save(self, **kwargs):
+        developer_id = self.validated_data['developer_id']
+        project_id = self.context['project_id']
+
+        return ProjectDeveloper.objects.create(
+            project_id=project_id,
+            developer_id=developer_id
+        )

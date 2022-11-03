@@ -1,3 +1,4 @@
+from multiprocessing import context
 from django.shortcuts import render
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, UpdateModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
@@ -8,7 +9,7 @@ from rest_framework import permissions
 from rest_framework.decorators import action
 from.models import Project, Ticket, Developer, ProjectDeveloper
 from django.conf import settings
-from.serializers import CreateProjectSerializer, CreateTicketSerializer, DeveloperSerializer, ProjectSerializer, TicketSerializer, UpdateProjectSerializer
+from.serializers import CreateProjectSerializer, CreateTicketSerializer, DeveloperSerializer, ProjectSerializer, TicketSerializer, UpdateProjectSerializer, CreateProjectDeveloperSerializer
 
 # Create your views here.
 #you should only be able update and delete the pojects you have created
@@ -48,6 +49,7 @@ class ProjectViewSet(ModelViewSet):
             return Response(serializer.data)
 
         return ProjectSerializer
+
     
     def destroy(self, request, *args, **kwargs):
         developer_id = Developer.objects.get(user_id=self.request.user.id)
@@ -56,9 +58,7 @@ class ProjectViewSet(ModelViewSet):
         if current_project.creator != developer_id:
             return Response({'error':'You cannot delete this project because you are not the creator'})
         
-        return super().destroy(request, *args, **kwargs)      
-    
-
+        return super().destroy(request, *args, **kwargs) 
 
 class DeveloperViewSet(ModelViewSet):
     queryset = Developer.objects.all()
@@ -94,6 +94,22 @@ class TicketViewSet(ModelViewSet):
             return CreateTicketSerializer
         return TicketSerializer
 
+class ProjectDeveloperViewSet(ModelViewSet):
+    permission_classes=[permissions.IsAuthenticated]
+
+    def get_queryset(self): #return the developers in that project
+        developer_list = ProjectDeveloper.objects.filter(project_id=self.kwargs['project_pk'])
+        developer_ids = [entry.developer_id for entry in developer_list]
+        return Developer.objects.filter(id__in=developer_ids)
+    
+    def get_serializer_context(self):
+        return {'project_id':self.kwargs['project_pk']}
+    
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateProjectDeveloperSerializer
+        return DeveloperSerializer
+    
 
 
 
