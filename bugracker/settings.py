@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
-from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'debug_toolbar',
     'rest_framework',
     'djoser',
@@ -47,6 +50,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -146,6 +151,24 @@ REST_FRAMEWORK = {
     ),
 }
 
+djoser = {
+    'SERIALIZERS':{
+        'user_create': 'core.serializers.UserCreateSerializer',
+        'current_user' : 'core.serializers.UserSerializer',
+        }
+}
+DJOSER = {
+    'SERIALIZERS':{
+        'user_create': 'core.serializers.UserCreateSerializer',
+        'current_user' : 'core.serializers.UserSerializer',
+        }
+}
+
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000'
+]
+
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
@@ -157,9 +180,3 @@ SIMPLE_JWT = {
    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-djoser = {
-    'SERIALIZERS':{
-        'user_create': 'core.serializers.UserCreateSerializer',
-        'current_user' : 'core.serializers.UserSerializer',
-        }
-}

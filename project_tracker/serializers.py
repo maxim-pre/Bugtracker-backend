@@ -95,3 +95,8 @@ class CreateProjectDeveloperSerializer(serializers.Serializer):
             project_id=project_id,
             developer_id=developer_id
         )
+
+class TestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'name', 'description', 'creator', 'date_created']
