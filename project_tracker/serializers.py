@@ -1,7 +1,7 @@
 from django.db import models
 from rest_framework import serializers
 from .models import Project, ProjectDeveloper, Ticket, Developer
-
+from django.conf import settings
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -33,11 +33,6 @@ class UpdateProjectSerializer(serializers.ModelSerializer):
         fields = ['name', 'description']
         model = Project
         
-class DeveloperSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(read_only=True)
-    class Meta:
-        fields = ['id', 'user_id', 'phone', 'birthday']
-        model = Developer
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,6 +64,13 @@ class CreateTicketSerializer(serializers.ModelSerializer):
         )
         return 
 
+
+class DeveloperSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(read_only=True)
+    class Meta:
+        fields = ['id', 'user_id', 'phone', 'birthday']
+        model = Developer
+
 class CreateProjectDeveloperSerializer(serializers.Serializer):
     developer_id = serializers.IntegerField()
     
@@ -96,7 +98,4 @@ class CreateProjectDeveloperSerializer(serializers.Serializer):
             developer_id=developer_id
         )
 
-class TestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Project
-        fields = ['id', 'name', 'description', 'creator', 'date_created']
+

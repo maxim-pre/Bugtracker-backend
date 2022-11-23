@@ -9,7 +9,7 @@ from rest_framework import permissions
 from rest_framework.decorators import action
 from.models import Project, Ticket, Developer, ProjectDeveloper
 from django.conf import settings
-from.serializers import CreateProjectSerializer, CreateTicketSerializer, DeveloperSerializer, ProjectSerializer, TicketSerializer, UpdateProjectSerializer, CreateProjectDeveloperSerializer, TestSerializer
+from.serializers import CreateProjectSerializer, CreateTicketSerializer, DeveloperSerializer, ProjectSerializer, TicketSerializer, UpdateProjectSerializer, CreateProjectDeveloperSerializer
 
 # Create your views here.
 #you should only be able update and delete the pojects you have created
@@ -110,9 +110,6 @@ class ProjectDeveloperViewSet(ModelViewSet):
             return CreateProjectDeveloperSerializer
         return DeveloperSerializer
 
-class TestViewSet(ModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = TestSerializer
     
 
 
