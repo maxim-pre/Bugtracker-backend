@@ -1,7 +1,7 @@
 from cgitb import lookup
 from rest_framework_nested import routers
 
-from .views import DeveloperViewSet, ProjectDeveloperViewSet, ProjectViewSet, TicketViewSet
+from .views import DeveloperViewSet, ProjectDeveloperViewSet, ProjectViewSet, TicketViewSet, CommentViewSet
 
 
 router = routers.DefaultRouter()
@@ -12,4 +12,7 @@ projects_router = routers.NestedDefaultRouter(router, 'projects', lookup='projec
 projects_router.register('tickets',TicketViewSet, basename='project-tickets')
 projects_router.register('developers',ProjectDeveloperViewSet, basename='project-developers')
 
-urlpatterns = router.urls + projects_router.urls
+tickets_router = routers.NestedDefaultRouter(projects_router, 'tickets', lookup='ticket')
+tickets_router.register('comments', CommentViewSet, basename='project-ticket-comments' )
+
+urlpatterns = router.urls + projects_router.urls + tickets_router.urls

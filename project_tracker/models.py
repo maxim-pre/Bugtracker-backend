@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.conf import settings
 
 class Developer(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='developer')
     birthday = models.DateField(null=True, blank=True)
     phone = models.CharField(max_length=255)
 
@@ -38,6 +38,9 @@ class ProjectDeveloper(models.Model):
     def developer_name(self):
         return f'{self.developer.user.first_name} {self.developer.user.last_name}'
     
+    def developer_username(self):
+        return f'{self.developer.user.username}'
+    
     def project_title(self):
         return self.project.name
     
@@ -45,22 +48,44 @@ class ProjectDeveloper(models.Model):
         unique_together=['project','developer']
     
 
-
 class Ticket(models.Model):
     STATUS_OPEN = 'O'
     STATUS_STARTED = 'S'
     STATUS_CLOSED = 'C'
-    
+
+    TYPE_ISSUE = 'I'
+    TYPE_BUG = 'B'
+    TYPE_FEATURE_REQUEST = 'FR'
+
+    PRIORITY_LOW = 'L'
+    PRIORITY_MEDIUM = 'M'
+    PRIORITY_HIGH = 'H'
+
     STATUS_CHOICES = [
         (STATUS_OPEN, 'open'),
         (STATUS_STARTED, 'started'),
         (STATUS_CLOSED, 'closed')
     ]
+
+    TYPE_CHOICES = [
+        (TYPE_ISSUE, 'issue'),
+        (TYPE_BUG, 'bug'),
+        (TYPE_FEATURE_REQUEST, 'feature request'),
+    ]
+
+    PRIORITY_CHOICES = [
+        (PRIORITY_LOW, 'low'),
+        (PRIORITY_MEDIUM, 'medium'),
+        (PRIORITY_HIGH, 'high'),
+    ]
+
+
     title = models.CharField(max_length=255)
     description = models.TextField()
     submitter = models.ForeignKey(Developer, on_delete=models.CASCADE, related_name='submitter')
-    developer = models.ForeignKey(Developer, on_delete=models.CASCADE, related_name='developer')
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=STATUS_OPEN)
+    priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default=PRIORITY_LOW)
+    type = models.CharField(max_length=2, choices=TYPE_CHOICES, default=TYPE_ISSUE)
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -71,3 +96,24 @@ class Ticket(models.Model):
         return f'{self.submitter.user.first_name} {self.submitter.user.last_name}'
     def developer_name(self):
         return f'{self.developer.user.first_name} {self.developer.user.last_name}'
+
+class TicketDeveloper(models.Model):
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='developers')
+    developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
+
+    def developer_name(self):
+        return f'{self.developer.user.first_name} {self.developer.user.last_name}'
+    
+    def ticket_title(self):
+        return self.ticket.name
+    
+    class Meta:
+        unique_together=['ticket','developer']
+
+class Comment(models.Model):
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='comments')
+    author = models.CharField(max_length=255)
+    time_created = models.DateTimeField(auto_now_add=True)
+    comment = models.TextField()
+
+

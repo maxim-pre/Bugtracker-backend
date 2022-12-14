@@ -41,10 +41,10 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):
     list_display = ['title', 'project_name', 'submitter_name', 'created_at', 'developer_name', 'last_updated', 'status']
-    list_select_related = ['project', 'developer', 'submitter'] #the list of fields we want to eager load
+    list_select_related = ['project', 'submitter'] #the list of fields we want to eager load
     list_filter = ['project', 'created_at']
     list_per_page = 10
-    autocomplete_fields = ['project', 'developer', 'submitter']
+    autocomplete_fields = ['project', 'submitter']
 
 @admin.register(Developer)
 class DeveloperAdmin(admin.ModelAdmin):

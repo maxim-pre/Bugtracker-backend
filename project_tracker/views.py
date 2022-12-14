@@ -1,5 +1,6 @@
 from multiprocessing import context
 from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, UpdateModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import RetrieveModelMixin, CreateModelMixin, DestroyModelMixin, UpdateModelMixin
@@ -7,9 +8,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
 from rest_framework.decorators import action
-from.models import Project, Ticket, Developer, ProjectDeveloper
+from.models import Project, Ticket, Developer, ProjectDeveloper, TicketDeveloper, Comment
 from django.conf import settings
-from.serializers import CreateProjectSerializer, CreateTicketSerializer, DeveloperSerializer, ProjectSerializer, TicketSerializer, UpdateProjectSerializer, CreateProjectDeveloperSerializer
+from.serializers import CreateProjectSerializer, CreateTicketSerializer, DeveloperSerializer, ProjectSerializer, TicketSerializer, UpdateProjectSerializer, CreateProjectDeveloperSerializer, UpdateTicketSerializer, CreateCommentSerializer, CommentSerializer
 
 # Create your views here.
 #you should only be able update and delete the pojects you have created
@@ -56,12 +57,20 @@ class ProjectViewSet(ModelViewSet):
         current_project = Project.objects.get(id=kwargs['pk'])
 
         if current_project.creator != developer_id:
-            return Response({'error':'You cannot delete this project because you are not the creator'})
+            return Response({'error':'You cannot delete this project because you are not the creator'}, status=status.HTTP_403_FORBIDDEN)
         
         return super().destroy(request, *args, **kwargs) 
 
+    def update(self, request, *args, **kwargs):
+        developer_id = Developer.objects.get(user_id=self.request.user.id)
+        current_project = Project.objects.get(id=kwargs['pk'])
+
+        if current_project.creator != developer_id:
+            return Response({'error':'You cannot update this project because you are not the creator'}, status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
+
 class DeveloperViewSet(ModelViewSet):
-    queryset = Developer.objects.all()
+    queryset = Developer.objects.all().select_related('user')
     serializer_class = DeveloperSerializer
     permission_classes = [permissions.IsAdminUser]
 
@@ -83,7 +92,7 @@ class TicketViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Ticket.objects.filter(project_id=self.kwargs['project_pk'])
-    
+
     def get_serializer_context(self):
         return {
             'project_id':self.kwargs['project_pk'],
@@ -92,8 +101,18 @@ class TicketViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return CreateTicketSerializer
+        
+        elif self.request.method == 'PUT' or self.request.method == 'PATCH':
+            return UpdateTicketSerializer
         return TicketSerializer
 
+    def update(self, request, *args, **kwargs):
+        TicketDeveloper.objects.filter(ticket_id=self.kwargs['pk']).delete()
+        for id in [entry['developer_id'] for entry in request.data['developers']]:
+            TicketDeveloper.objects.create(ticket_id=self.kwargs['pk'], developer_id=id)
+        
+        request.data.pop('developers')
+        return super().update(request, *args, **kwargs)
 class ProjectDeveloperViewSet(ModelViewSet):
     permission_classes=[permissions.IsAuthenticated]
 
@@ -110,8 +129,37 @@ class ProjectDeveloperViewSet(ModelViewSet):
             return CreateProjectDeveloperSerializer
         return DeveloperSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        developer = Developer.objects.get(id=kwargs['pk'])
+        current_project = Project.objects.get(id=kwargs['project_pk'])
+
+        if current_project.creator != Developer.objects.get(user_id=self.request.user.id):
+            return Response({'error':'You do not have permission to delete team members'}, status=status.HTTP_403_FORBIDDEN)
+
+        if current_project.creator == developer:
+            return Response({'error':'You cannot delete the creator of the project'}, status=status.HTTP_403_FORBIDDEN)
+
+        project_developer = ProjectDeveloper.objects.get(project=current_project, developer=developer)
+        self.perform_destroy(project_developer)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentViewSet(ModelViewSet):
+    serializer_class = CreateCommentSerializer
     
 
+    def get_queryset(self):
+        return Comment.objects.filter(ticket_id=self.kwargs['ticket_pk'])
 
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateCommentSerializer
+        return CommentSerializer
+
+    def get_serializer_context(self):
+        return {
+            'ticket_id':self.kwargs['ticket_pk'],
+            'user_id':self.request.user.id
+            }
 
 

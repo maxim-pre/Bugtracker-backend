@@ -1,6 +1,6 @@
 from django.db import models
 from rest_framework import serializers
-from .models import Project, ProjectDeveloper, Ticket, Developer, TicketDeveloper
+from .models import Project, ProjectDeveloper, Ticket, Developer, TicketDeveloper, Comment
 from django.contrib.auth import get_user_model
 
 
@@ -51,14 +51,20 @@ class UpdateProjectSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ['name', 'description']
         model = Project
-        
-
 
 class TicketDeveloperSerializer(serializers.ModelSerializer):
     developer = DeveloperSerializer()
     class Meta:
-        fields = ['developer']
+        fields = ['developer_id', 'developer']
         model = TicketDeveloper
+        extra_kwargs = {
+            'developer_id': {'read_only': False}
+        }
+class UpdateTicketSerializer(serializers.ModelSerializer):
+    developers = TicketDeveloperSerializer(many=True)
+    class Meta:
+        fields = ['title','description','status','priority','type', 'developers']
+        model = Ticket
 
 class TicketSerializer(serializers.ModelSerializer):
     developers = TicketDeveloperSerializer(many=True)
@@ -79,7 +85,6 @@ class CreateTicketSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
 
-        User = get_user_model()
         submitter = Developer.objects.get(user_id=self.context['user_id'])
         project = Project.objects.get(id=self.context['project_id'])
 
@@ -92,14 +97,12 @@ class CreateTicketSerializer(serializers.ModelSerializer):
             priority = self.validated_data['priority']
         )
 
-        usernames = self.validated_data['developers'] # this will be a list of usernames 
-        user_ids = User.objects.prefetch_related("developers").only('id').filter(username__in=usernames)
-        developer_ids = Developer.objects.only('id').filter(user_id__in=user_ids)
+        developer_ids = self.validated_data['developers']
 
-        for developer in developer_ids:
+        for id in developer_ids:
             TicketDeveloper.objects.create(
                 ticket_id = new_ticket.id,
-                developer_id = developer.id
+                developer_id = id
             )
         return 
 
@@ -153,3 +156,25 @@ class CreateProjectDeveloperSerializer(serializers.Serializer):
         # )
 
 
+
+class CreateCommentSerializer(serializers.Serializer):
+    comment = serializers.CharField()
+    def save(self, **kwargs):
+        comment = self.validated_data['comment']
+        ticket_id = self.context['ticket_id']
+        ticket = Ticket.objects.get(id=ticket_id)
+
+        user_id = self.context['user_id']
+        User = get_user_model()
+        user = User.objects.get(id=user_id)
+    
+        return Comment.objects.create(
+                ticket=ticket,
+                author=user.username,
+                comment=comment
+            )
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ['id','ticket','author','time_created','comment']
+        model = Comment
