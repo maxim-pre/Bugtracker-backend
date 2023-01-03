@@ -31,9 +31,12 @@ class Project(models.Model):
     
     class Meta:
         ordering = ['name']
+
 class ProjectDeveloper(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='developers')
-    developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
+    developer = models.ForeignKey(Developer, on_delete=models.CASCADE, related_name='project_developers')
+    role = models.CharField(max_length=255, default="Developer")
+    admin_permission = models.BooleanField(default=False)
 
     def developer_name(self):
         return f'{self.developer.user.first_name} {self.developer.user.last_name}'
@@ -117,3 +120,4 @@ class Comment(models.Model):
     comment = models.TextField()
 
 
+    

@@ -6,10 +6,10 @@ class UserCreateSerializer(BaseUserCreateSerializer):
 
 class UserSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
-        fields = ['id','username', 'email','first_name','last_name']
+        fields = ['id','username', 'email','first_name','last_name', 'is_staff', 'is_superuser', 'date_joined']
 
 class CurrentUserSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
-        fields = ['id','username', 'email','first_name','last_name']
+        fields = ['id','username', 'email','first_name','last_name', 'is_staff', 'is_superuser', 'date_joined']
 
 

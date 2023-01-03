@@ -14,11 +14,17 @@ class DeveloperSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ['id', 'user', 'phone', 'birthday',]
         model = Developer
-
+    
 class ProjectDeveloperSerializer(serializers.ModelSerializer):
     developer = DeveloperSerializer()
     class Meta:
-        fields = ['developer']
+        fields = ['id','developer', 'role', 'admin_permission']
+        model = ProjectDeveloper
+
+class UpdateProjectDeveloperSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        fields = ['id','role','admin_permission']
         model = ProjectDeveloper
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -44,7 +50,9 @@ class CreateProjectSerializer(serializers.ModelSerializer):
         #automatically assign the project creator to the list of developers
         ProjectDeveloper.objects.create(
             project_id=new_project.id,
-            developer_id=creator.id
+            developer_id=creator.id,
+            role='Admin',
+            admin_permission=True
         )
 
 class UpdateProjectSerializer(serializers.ModelSerializer):
@@ -66,12 +74,32 @@ class UpdateTicketSerializer(serializers.ModelSerializer):
         fields = ['title','description','status','priority','type', 'developers']
         model = Ticket
 
+class SimpleProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ['id', 'name']
+        model = Project
+
 class TicketSerializer(serializers.ModelSerializer):
     developers = TicketDeveloperSerializer(many=True)
     submitter = DeveloperSerializer()
+    project = SimpleProjectSerializer()
+    status = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
+    priority = serializers.SerializerMethodField()
+    
     class Meta:
         fields = ['id', 'title','description','submitter','developers','status', 'type', 'priority','created_at','last_updated','project']
         model = Ticket
+
+    def get_status(self, obj):
+        return obj.get_status_display()
+    
+    def get_type(self, obj):
+        return obj.get_type_display()
+    
+    def get_priority(self, obj):
+        return obj.get_priority_display()
+        
 
 class CreateTicketSerializer(serializers.ModelSerializer):
 
@@ -110,6 +138,7 @@ class CreateTicketSerializer(serializers.ModelSerializer):
 class CreateProjectDeveloperSerializer(serializers.Serializer):
     # developer_id = serializers.IntegerField()
     username = serializers.CharField()
+    role = serializers.CharField()
     
     
     def validate_username(self, username):
@@ -136,7 +165,9 @@ class CreateProjectDeveloperSerializer(serializers.Serializer):
     def save(self, **kwargs):
         # developer_id = self.validated_data['developer_id']
         username = self.validated_data['username']
+        role = self.validated_data['role']
         project_id = self.context['project_id']
+        
         # find the developer_id based on the provided username
         try:
             User = get_user_model()
@@ -147,7 +178,8 @@ class CreateProjectDeveloperSerializer(serializers.Serializer):
 
         return ProjectDeveloper.objects.create(
             project_id=project_id,
-            developer_id = developer.id
+            developer_id = developer.id,
+            role=role
         )
 
         # return ProjectDeveloper.objects.create(
@@ -173,8 +205,11 @@ class CreateCommentSerializer(serializers.Serializer):
                 author=user.username,
                 comment=comment
             )
+        
 
 class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ['id','ticket','author','time_created','comment']
-        model = Comment
+        class Meta:
+            fields = ['id','ticket','author','time_created','comment']
+            model = Comment
+
+    

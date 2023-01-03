@@ -149,6 +149,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+
+    'DATETIME_FORMAT': "%d/%m/%Y %H:%M:%S",
 }
 
 djoser = {
@@ -163,7 +165,6 @@ DJOSER = {
         'user' : 'core.serializers.UserSerializer',
         'current_user' : 'core.serializers.CurrentUserSerializer',
         },
-    'HIDE_USERS': False
 }
 
 
