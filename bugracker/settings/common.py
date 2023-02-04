@@ -21,11 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+k-3=6@0h82#0tnoe5c%h#8px==d=+ay@goo_wrd7-(4_$&tsn'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -83,21 +78,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bugracker.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bugtracker',
-        'USER': 'root',
-        'HOST': 'localhost',
-        'PASSWORD': 'mp140401',
-
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -153,12 +133,6 @@ REST_FRAMEWORK = {
     'DATETIME_FORMAT': "%d/%m/%Y %H:%M:%S",
 }
 
-djoser = {
-    'SERIALIZERS':{
-        'user_create': 'core.serializers.UserCreateSerializer',
-        'current_user' : 'core.serializers.UserSerializer',
-        }
-}
 DJOSER = {
     'SERIALIZERS':{
         'user_create': 'core.serializers.UserCreateSerializer',
@@ -181,5 +155,32 @@ AUTH_USER_MODEL = 'core.User'
 SIMPLE_JWT = {
    'AUTH_HEADER_TYPES': ('JWT', 'Bearer'),
    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler'
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'general.log',
+            'formatter': 'verbose'
+        }
+    },
+    'loggers' : { 
+        '' : {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR'
+        }
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} ({levelname}) - {name} - {message}',
+            'style': '{'
+        }
+    }
 }
 
