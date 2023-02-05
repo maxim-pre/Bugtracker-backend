@@ -13,6 +13,8 @@ djoser = "*"
 djangorestframework-simplejwt = "*"
 django-cors-headers = "*"
 gunicorn = "*"
+waitress = "*"
+dj-database-url = "*"
 
 [dev-packages]
 
