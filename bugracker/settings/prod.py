@@ -6,8 +6,12 @@ DEBUG = False
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
-ALLOWED_HOSTS = ["bugtracker-prod.herokuapp.com", "bugtrackeradmin.herokuapp.com"]
+ALLOWED_HOSTS = ["bugtracker-prod.herokuapp.com"]
 
 DATABASES = {
     'default': dj_database_url.config()
 }
+
+CORS_ALLOWED_ORIGINS = [
+    'https://bugtrackeradmin.herokuapp.com'
+]
