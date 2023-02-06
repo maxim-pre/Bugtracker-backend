@@ -151,6 +151,13 @@ CORS_ALLOWED_ORIGINS = [
     'https://bugtrackeradmin.herokuapp.com'
 ]
 
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'https://bugtrackeradmin.herokuapp.com',
+    'http://bugtrackeradmin.herokuapp.com/'
+    
+]
+
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
