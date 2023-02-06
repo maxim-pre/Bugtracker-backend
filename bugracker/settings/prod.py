@@ -11,7 +11,3 @@ ALLOWED_HOSTS = ["bugtracker-prod.herokuapp.com"]
 DATABASES = {
     'default': dj_database_url.config()
 }
-
-CORS_ALLOWED_ORIGINS = [
-    'https://bugtrackeradmin.herokuapp.com'
-]
