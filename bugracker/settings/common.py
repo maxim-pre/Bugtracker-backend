@@ -146,17 +146,13 @@ DJOSER = {
 }
 
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'https://bugtrackeradmin.herokuapp.com'
-]
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
+       'http://localhost:3000',
+       'http://bugtrackeradmin.herokuapp.com',
+       'https://bugtrackeradmin.herokuapp.com',
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',
-    'https://bugtrackeradmin.herokuapp.com',
-    'http://bugtrackeradmin.herokuapp.com/'
-    
-]
+)
 
 INTERNAL_IPS = [
     "127.0.0.1",
